@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Windows;
 using LuaSTGEditorSharp.Execution;
 
 namespace LuaSTGEditorSharp
@@ -11,17 +7,23 @@ namespace LuaSTGEditorSharp
     {
         public override void BeforeRun(ExecutionConfig config)
         {
-            IAppDebugSettings currentApp = System.Windows.Application.Current as IAppDebugSettings;
-            Parameter = "\""
-                + "start_game=true is_debug=true setting.nosplash=true setting.windowed="
-                + currentApp.DebugWindowed.ToString().ToLower() + " setting.resx=" + currentApp.DebugResolutionX
-                + " setting.resy=" + currentApp.DebugResolutionY + " cheat=" + currentApp.DebugCheat.ToString().ToLower()
-                + " updatelib=" + currentApp.DebugUpdateLib.ToString().ToLower() + " setting.mod=\'"
-                + config.ModName + "\'\"";
+            // LuaSTG Sub v0.21.118+ supports stdout redirect
+            var currentApp = Application.Current as IAppDebugSettings;
+            var luaSetting = "\""
+                             + "start_game=true "
+                             + "is_debug=true "
+                             + "cheat=" + currentApp!.DebugCheat.ToString().ToLower() + " "
+                             + "setting.windowed=" + currentApp!.DebugWindowed.ToString().ToLower() + " "
+                             + "setting.resx=" + currentApp!.DebugResolutionX + " "
+                             + "setting.resy=" + currentApp!.DebugResolutionY + " "
+                             + "setting.mod=\'" + config.ModName + "\'"
+                             + "\"";
+            var stdout = "--logging.standard_output.enable=" + currentApp!.DynamicDebugReporting.ToString().ToLower();
+            Parameter = luaSetting + " " + stdout;
             UseShellExecute = false;
             CreateNoWindow = true;
             RedirectStandardError = false;
-            RedirectStandardOutput = currentApp.DynamicDebugReporting; // LuaSTG Sub v0.21.118+ supports stdout redirect
+            RedirectStandardOutput = currentApp!.DynamicDebugReporting;
         }
 
         protected override string LogFileName => "engine.log";
